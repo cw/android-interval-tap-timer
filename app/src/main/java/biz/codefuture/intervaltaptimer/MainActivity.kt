@@ -14,8 +14,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import biz.codefuture.intervaltaptimer.ui.theme.IntervalTapTimerTheme
 import kotlinx.coroutines.*
+import android.util.Log
 
 class MainActivity : ComponentActivity() {
+    companion object {
+        private const val TAG = "MainActivity"
+    }
+
     private val vibrationService by lazy { getSystemService(VIBRATOR_SERVICE) as Vibrator }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,9 +44,11 @@ class MainActivity : ComponentActivity() {
             vibrationService.vibrate(
                 VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE)
             )
+            Log.d(TAG, "vibrate: one shot")
         } else {
             @Suppress("DEPRECATION")
             vibrationService.vibrate(200)
+            Log.d(TAG, "vibrate: straight call")
         }
     }
 }
@@ -87,6 +94,7 @@ fun IntervalTimerScreen(
                             isRunning = false
                         }
                     }
+                    Log.d("IntervalTimerScreen", "IntervalTimerScreen: start clicked $isRunning")
                 },
                 enabled = !isRunning
             ) {
@@ -98,6 +106,7 @@ fun IntervalTimerScreen(
                     isRunning = false
                     job?.cancel()
                     job = null
+                    Log.d("IntervalTimerScreen", "IntervalTimerScreen: stop clicked $isRunning")
                 },
                 enabled = isRunning
             ) {
