@@ -25,6 +25,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContent {
             IntervalTapTimerTheme {
@@ -42,12 +43,12 @@ class MainActivity : ComponentActivity() {
     private fun vibrate() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vibrationService.vibrate(
-                VibrationEffect.createOneShot(200, VibrationEffect.DEFAULT_AMPLITUDE)
+                VibrationEffect.createOneShot(1000,  255) // Maximum amplitude
             )
             Log.d(TAG, "vibrate: one shot")
         } else {
             @Suppress("DEPRECATION")
-            vibrationService.vibrate(200)
+            vibrationService.vibrate(1000)
             Log.d(TAG, "vibrate: straight call")
         }
     }
@@ -112,6 +113,7 @@ fun IntervalTimerScreen(
                             }
                             isRunning = false
                         }
+                        onVibrate() // Vibrate on start
                     }
                     Log.d("IntervalTimerScreen", "Start clicked. isRunning = $isRunning")
                 },
