@@ -61,9 +61,19 @@ fun IntervalTimerScreen(
     var intervalCount by remember { mutableIntStateOf(0) }
     var isRunning by remember { mutableStateOf(false) }
     var job by remember { mutableStateOf<Job?>(null) }
+    var elapsedTimeMillis by remember { mutableLongStateOf(0L) }
+    var startTimeMillis by remember { mutableLongStateOf(0L) }
 
     val maxIntervals = 20
     val intervalDuration = 30_000L
+
+    // Launch a coroutine to update elapsed time every second
+    LaunchedEffect(isRunning) {
+        while (isRunning) {
+            delay(1000)
+            elapsedTimeMillis = System.currentTimeMillis() - startTimeMillis
+        }
+    }
 
     Column(
         modifier = modifier
@@ -77,6 +87,13 @@ fun IntervalTimerScreen(
             style = MaterialTheme.typography.headlineMedium
         )
 
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = "Elapsed: ${formatElapsedTime(elapsedTimeMillis)}",
+            style = MaterialTheme.typography.bodyLarge
+        )
+
         Spacer(modifier = Modifier.height(24.dp))
 
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -85,6 +102,8 @@ fun IntervalTimerScreen(
                     if (!isRunning) {
                         isRunning = true
                         intervalCount = 0
+                        startTimeMillis = System.currentTimeMillis()
+                        elapsedTimeMillis = 0
                         job = CoroutineScope(Dispatchers.Main).launch {
                             while (intervalCount < maxIntervals && isRunning) {
                                 delay(intervalDuration)
@@ -94,7 +113,7 @@ fun IntervalTimerScreen(
                             isRunning = false
                         }
                     }
-                    Log.d("IntervalTimerScreen", "IntervalTimerScreen: start clicked $isRunning")
+                    Log.d("IntervalTimerScreen", "Start clicked. isRunning = $isRunning")
                 },
                 enabled = !isRunning
             ) {
@@ -106,7 +125,7 @@ fun IntervalTimerScreen(
                     isRunning = false
                     job?.cancel()
                     job = null
-                    Log.d("IntervalTimerScreen", "IntervalTimerScreen: stop clicked $isRunning")
+                    Log.d("IntervalTimerScreen", "Stop clicked. isRunning = $isRunning")
                 },
                 enabled = isRunning
             ) {
@@ -114,4 +133,13 @@ fun IntervalTimerScreen(
             }
         }
     }
+}
+
+// Utility function to format time in mm:ss
+@Composable
+fun formatElapsedTime(milliseconds: Long): String {
+    val totalSeconds = milliseconds / 1000
+    val minutes = totalSeconds / 60
+    val seconds = totalSeconds % 60
+    return "%02d:%02d".format(minutes, seconds)
 }
