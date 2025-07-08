@@ -102,7 +102,7 @@ fun IntervalTimerScreen(
                 onClick = {
                     if (!isRunning) {
                         isRunning = true
-                        intervalCount = 0
+                        intervalCount = 1
                         startTimeMillis = System.currentTimeMillis()
                         elapsedTimeMillis = 0
                         job = CoroutineScope(Dispatchers.Main).launch {
