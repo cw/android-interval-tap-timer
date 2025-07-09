@@ -4,8 +4,8 @@ This Android app was developed as a simple way for me to track antibiotic self-a
 
 ## Features
 * Hard coded 30 second interval & 20 interval count
-* Vibrates your Android device at the end of every interval
-* Flashes your Android device screen at the end of each interval
+* Vibrates your Android device on interval end
+* Flashes your Android device screen on interval end
 
 ## Future TODO
 * Adjustable total interval count (currently set to 20)
