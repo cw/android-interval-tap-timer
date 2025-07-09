@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -19,8 +20,22 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Run Android Lint
-        run: ./gradlew lint
+      - name: Run Android Lint and capture result
+        id: lint
+        run: |
+          ./gradlew lint
+        continue-on-error: true  # Capture failure but don't stop the job
+
+      - name: Upload Lint Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-lint-report
+          path: app/build/reports/lint-results*.html
+
+      - name: Fail if lint had errors
+        if: steps.lint.outcome == 'failure'
+        run: exit 1
 
   test:
     runs-on: ubuntu-latest
