@@ -10,3 +10,5 @@ This Android app was developed as a simple way for me to track antibiotic self-a
 ## Future TODO
 * Adjustable total interval count (currently set to 20)
 * Adjustable interval duration (currently set to 30 seconds)
+* Adjustable vibration intensity
+* Enable / disable screen flashing on interval end
