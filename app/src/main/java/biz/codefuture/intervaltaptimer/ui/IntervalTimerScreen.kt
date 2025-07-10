@@ -6,6 +6,8 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import biz.codefuture.intervaltaptimer.util.TimerUtils
 import kotlinx.coroutines.*
+
 
 @Composable
 fun IntervalTimerScreen(
@@ -71,15 +74,19 @@ fun IntervalTimerScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        val progress = intervalCount / maxIntervals.toFloat()
+        val animatedProgress by animateFloatAsState(
+            targetValue = intervalCount / maxIntervals.toFloat(),
+            animationSpec = tween(durationMillis = 500),
+            label = "ProgressAnimation"
+        )
+
         LinearProgressIndicator(
-        progress = { progress.coerceIn(0f, 1f) },
-        modifier = Modifier
-                        .fillMaxWidth()
-                        .height(8.dp),
-        color = ProgressIndicatorDefaults.linearColor,
-        trackColor = ProgressIndicatorDefaults.linearTrackColor,
-        strokeCap = ProgressIndicatorDefaults.LinearStrokeCap,
+            progress = animatedProgress.coerceIn(0f, 1f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp),
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.surfaceVariant
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -89,6 +96,7 @@ fun IntervalTimerScreen(
             style = MaterialTheme.typography.bodyLarge,
             color = if (flashActive) defaultBackgroundColor else MaterialTheme.colorScheme.onBackground
         )
+
 
         Spacer(modifier = Modifier.height(24.dp))
 
