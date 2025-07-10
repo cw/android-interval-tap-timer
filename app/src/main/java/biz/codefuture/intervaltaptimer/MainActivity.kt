@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import biz.codefuture.intervaltaptimer.ui.theme.IntervalTapTimerTheme
+import biz.codefuture.intervaltaptimer.util.TimerUtils
 import kotlinx.coroutines.*
 
 class MainActivity : ComponentActivity() {
@@ -32,9 +33,8 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             IntervalTapTimerTheme {
-                // IntervalTimerScreen will now control its own background for flashing
                 IntervalTimerScreen(
-                    modifier = Modifier.fillMaxSize(), // Apply fillMaxSize here
+                    modifier = Modifier.fillMaxSize(),
                     onVibrate = { vibrate() }
                 )
             }
@@ -67,19 +67,17 @@ fun IntervalTimerScreen(
     var elapsedTimeMillis by remember { mutableLongStateOf(0L) }
     var startTimeMillis by remember { mutableLongStateOf(0L) }
 
-    // State to control the flash effect
     var flashActive by remember { mutableStateOf(false) }
     val coroutineScope = rememberCoroutineScope()
 
-    val maxIntervals = 20
-    val intervalDuration = 30_000L // 30 seconds
+    val maxIntervals = TimerUtils.MAX_INTERVALS
+    val intervalDuration = TimerUtils.INTERVAL_DURATION_MS
 
-    // Launch a coroutine to update elapsed time every second
     LaunchedEffect(isRunning) {
         if (isRunning) {
-            while (isActive) { // Use isActive to ensure coroutine stops when scope is cancelled
+            while (isActive) {
                 delay(1000)
-                if (isRunning) { // Check isRunning again before updating time
+                if (isRunning) {
                     elapsedTimeMillis = System.currentTimeMillis() - startTimeMillis
                 }
             }
@@ -89,37 +87,35 @@ fun IntervalTimerScreen(
     val isDarkTheme = isSystemInDarkTheme()
     val defaultBackgroundColor = MaterialTheme.colorScheme.background
     val flashColor = if (isDarkTheme) Color.White else Color.Black
-
     val currentBackgroundColor = if (flashActive) flashColor else defaultBackgroundColor
 
-    // Function to trigger the flash
     fun triggerFlash() {
         coroutineScope.launch {
             flashActive = true
-            delay(200) // Duration of the flash
+            delay(200)
             flashActive = false
         }
     }
 
     Column(
         modifier = modifier
-            .background(currentBackgroundColor) // Apply background color here
-            .padding(32.dp), // Padding inside the background
+            .background(currentBackgroundColor)
+            .padding(32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = "Interval: $intervalCount / $maxIntervals",
             style = MaterialTheme.typography.headlineMedium,
-            color = if (flashActive) defaultBackgroundColor else MaterialTheme.colorScheme.onBackground // Adjust text color during flash
+            color = if (flashActive) defaultBackgroundColor else MaterialTheme.colorScheme.onBackground
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Text(
-            text = "Elapsed: ${formatElapsedTime(elapsedTimeMillis)}",
+            text = "Elapsed: ${TimerUtils.formatElapsedTime(elapsedTimeMillis)}",
             style = MaterialTheme.typography.bodyLarge,
-            color = if (flashActive) defaultBackgroundColor else MaterialTheme.colorScheme.onBackground // Adjust text color
+            color = if (flashActive) defaultBackgroundColor else MaterialTheme.colorScheme.onBackground
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -133,19 +129,17 @@ fun IntervalTimerScreen(
                         startTimeMillis = System.currentTimeMillis()
                         elapsedTimeMillis = 0
                         job = CoroutineScope(Dispatchers.Main).launch {
-                            // Initial flash and vibration on start
                             onVibrate()
                             triggerFlash()
                             while (intervalCount < maxIntervals && isRunning && isActive) {
                                 delay(intervalDuration)
-                                if (isRunning) { // Check if still running before vibrating and incrementing
+                                if (isRunning) {
                                     onVibrate()
                                     triggerFlash()
                                     intervalCount++
                                 }
                             }
-                            isRunning =
-                                false // Ensure isRunning is set to false when loop finishes or is cancelled
+                            isRunning = false
                         }
                     }
                     Log.d("IntervalTimerScreen", "Start clicked. isRunning = $isRunning")
@@ -158,9 +152,9 @@ fun IntervalTimerScreen(
             Button(
                 onClick = {
                     isRunning = false
-                    job?.cancel() // Cancel the coroutine
+                    job?.cancel()
                     job = null
-                    flashActive = false // Reset flash state on stop
+                    flashActive = false
                     Log.d("IntervalTimerScreen", "Stop clicked. isRunning = $isRunning")
                 },
                 enabled = isRunning
@@ -169,13 +163,4 @@ fun IntervalTimerScreen(
             }
         }
     }
-}
-
-// Utility function to format time in mm:ss
-@Composable
-fun formatElapsedTime(milliseconds: Long): String {
-    val totalSeconds = milliseconds / 1000
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return "%02d:%02d".format(minutes, seconds)
 }
